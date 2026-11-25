@@ -1,0 +1,155 @@
+{
+  "routeDate": "2026-11-25",
+  "stops": [
+    {
+      "stopNumber": 1,
+      "stopType": "delivery",
+      "shelfId": "7101",
+      "packageCount": 1,
+      "customerName": "ANA ALDEN",
+      "addressRaw": "1650 E STAGECOACH RUN",
+      "addressLine2": null,
+      "completed": true
+    },
+    {
+      "stopNumber": 2,
+      "stopType": "delivery",
+      "shelfId": "7101",
+      "packageCount": 2,
+      "customerName": "BRIAN CORVIN",
+      "addressRaw": "9399 N SPRING RUN P\u2026",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 3,
+      "stopType": "delivery",
+      "shelfId": "7114",
+      "packageCount": 1,
+      "customerName": "CARLA ESPARZA",
+      "addressRaw": "1632 E HERITAGE DR",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 4,
+      "stopType": "delivery",
+      "shelfId": "7114",
+      "packageCount": 3,
+      "customerName": "DEV FINLEY",
+      "addressRaw": "3435 E STONEBRIDGE LN",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 5,
+      "stopType": "delivery",
+      "shelfId": "7127",
+      "packageCount": 1,
+      "customerName": "ELENA GARROWAY",
+      "addressRaw": "2565 N PONY EXPRESS PKWY",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 6,
+      "stopType": "delivery",
+      "shelfId": "7127",
+      "packageCount": 2,
+      "customerName": "FRANK HOLLOWAY",
+      "addressRaw": "7862 N TINAMOUS RD",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 7,
+      "stopType": "pickup",
+      "shelfId": "7140",
+      "packageCount": 1,
+      "customerName": "NORTHWIND SUPPLY LLC",
+      "addressRaw": "4045 E PONY EXPRESS PKWY",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 8,
+      "stopType": "delivery",
+      "shelfId": "7140",
+      "packageCount": 1,
+      "customerName": "GINA IVERSEN",
+      "addressRaw": "1389 E AVIATOR AVE",
+      "addressLine2": "RM 104",
+      "completed": false
+    },
+    {
+      "stopNumber": 9,
+      "stopType": "delivery",
+      "shelfId": "7153",
+      "packageCount": 5,
+      "customerName": "HUGO JUAREZ",
+      "addressRaw": "3450 E GOLDEN EAGLE RD",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 10,
+      "stopType": "delivery",
+      "shelfId": "7153",
+      "packageCount": 1,
+      "customerName": "IRIS KESTREL",
+      "addressRaw": "3726 N PONY EXPRESS PKWY",
+      "addressLine2": null,
+      "completed": true
+    },
+    {
+      "stopNumber": 11,
+      "stopType": "delivery",
+      "shelfId": "7166",
+      "packageCount": 2,
+      "customerName": "JAMAL LINDQVIST",
+      "addressRaw": "1557 E EAGLE MOUNTAIN BLVD",
+      "addressLine2": "SUITE 100",
+      "completed": false
+    },
+    {
+      "stopNumber": 12,
+      "stopType": "delivery",
+      "shelfId": "7166",
+      "packageCount": 1,
+      "customerName": "KIRA MORROW",
+      "addressRaw": "7082 N SEEDLING DR",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 13,
+      "stopType": "delivery",
+      "shelfId": "7179",
+      "packageCount": 1,
+      "customerName": "LEO NAKAMURA",
+      "addressRaw": "2546 E PONY EXPRESS PKWY",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 14,
+      "stopType": "delivery",
+      "shelfId": "7179",
+      "packageCount": 2,
+      "customerName": "MAYA OYELARAN",
+      "addressRaw": "3985 E SMITH RANCH RD",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 15,
+      "stopType": "delivery",
+      "shelfId": "7192",
+      "packageCount": 1,
+      "customerName": "NOAH PRESCOTT",
+      "addressRaw": "4475 N HERITAGE DR",
+      "addressLine2": null,
+      "completed": false
+    }
+  ]
+}

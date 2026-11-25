@@ -1,0 +1,14 @@
+{
+  "name": "easy-ground",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @easy-ground/web",
+    "build": "npm run build -w @easy-ground/web",
+    "test": "npm test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

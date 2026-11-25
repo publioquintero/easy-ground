@@ -1,0 +1,13 @@
+# Build context for apps/web/Dockerfile (repo root)
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+.git
+.claude
+backend
+docs
+scripts
+packages/core/fixtures
+**/.env
+**/.env.*
+**/.DS_Store

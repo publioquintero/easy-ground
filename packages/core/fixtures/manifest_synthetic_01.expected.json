@@ -1,0 +1,425 @@
+{
+  "routeDate": "2026-11-24",
+  "stops": [
+    {
+      "stopNumber": 1,
+      "stopType": "delivery",
+      "shelfId": "6013",
+      "packageCount": 1,
+      "customerName": "ACME PARTS CO",
+      "addressRaw": "1729 NIAGARA LN N",
+      "addressLine2": null,
+      "completed": true
+    },
+    {
+      "stopNumber": 2,
+      "stopType": "delivery",
+      "shelfId": "6026",
+      "packageCount": 5,
+      "customerName": "TINA HOLLOWAY",
+      "addressRaw": "3665 WEAVER LAKE RD N",
+      "addressLine2": null,
+      "completed": true
+    },
+    {
+      "stopNumber": 3,
+      "stopType": "delivery",
+      "shelfId": "6059",
+      "packageCount": 1,
+      "customerName": "NOAH MORROW",
+      "addressRaw": "2241 WEAVER LAKE RD N",
+      "addressLine2": null,
+      "completed": true
+    },
+    {
+      "stopNumber": 4,
+      "stopType": "delivery",
+      "shelfId": "6066",
+      "packageCount": 1,
+      "customerName": "SAM IVERSEN",
+      "addressRaw": "3320 NIAGARA LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 5,
+      "stopType": "delivery",
+      "shelfId": "6099",
+      "packageCount": 1,
+      "customerName": "JAMAL OYELARAN",
+      "addressRaw": "12542 KIRKWOOD LN N",
+      "addressLine2": null,
+      "completed": true
+    },
+    {
+      "stopNumber": 6,
+      "stopType": "delivery",
+      "shelfId": "6119",
+      "packageCount": 1,
+      "customerName": "SAM ESPARZA",
+      "addressRaw": "9662 80TH AVE N",
+      "addressLine2": "APT 219",
+      "completed": false
+    },
+    {
+      "stopNumber": 7,
+      "stopType": "delivery",
+      "shelfId": "6119",
+      "packageCount": 1,
+      "customerName": "FRANK HOLLOWAY",
+      "addressRaw": "5248 82ND AVE N",
+      "addressLine2": "# 114",
+      "completed": false
+    },
+    {
+      "stopNumber": 8,
+      "stopType": "delivery",
+      "shelfId": "6139",
+      "packageCount": 1,
+      "customerName": "IRIS FINLEY",
+      "addressRaw": "9260 CENTRAL PARK BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 9,
+      "stopType": "delivery",
+      "shelfId": "6146",
+      "packageCount": 1,
+      "customerName": "JAMAL ALDEN",
+      "addressRaw": "1444 80TH AVE N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 10,
+      "stopType": "delivery",
+      "shelfId": "6179",
+      "packageCount": 3,
+      "customerName": "MAYA HOLLOWAY",
+      "addressRaw": "10967 KIRKWOOD LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 11,
+      "stopType": "delivery",
+      "shelfId": "6212",
+      "packageCount": 1,
+      "customerName": "GINA FINLEY",
+      "addressRaw": "3953 69TH AVE N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 12,
+      "stopType": "delivery",
+      "shelfId": "6225",
+      "packageCount": 1,
+      "customerName": "PAUL KESTREL",
+      "addressRaw": "2250 OAKVIEW DR N",
+      "addressLine2": "UNIT 3B",
+      "completed": false
+    },
+    {
+      "stopNumber": 13,
+      "stopType": "delivery",
+      "shelfId": "6238",
+      "packageCount": 3,
+      "customerName": "TINA OYELARAN",
+      "addressRaw": "7369 MAIN ST N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 14,
+      "stopType": "delivery",
+      "shelfId": "6245",
+      "packageCount": 5,
+      "customerName": "OLGA ALDEN",
+      "addressRaw": "7783 82ND AVE N",
+      "addressLine2": "MS A220",
+      "completed": false
+    },
+    {
+      "stopNumber": 15,
+      "stopType": "delivery",
+      "shelfId": "6252",
+      "packageCount": 5,
+      "customerName": "BRIAN NAKAMURA",
+      "addressRaw": "4520 KIRKWOOD LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 16,
+      "stopType": "delivery",
+      "shelfId": "6272",
+      "packageCount": 1,
+      "customerName": "PAUL CORVIN",
+      "addressRaw": "8664 WEAVER LAKE RD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 17,
+      "stopType": "delivery",
+      "shelfId": "6292",
+      "packageCount": 3,
+      "customerName": "BRIAN ESPARZA",
+      "addressRaw": "7310 CENTRAL PARK BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 18,
+      "stopType": "pickup",
+      "shelfId": "6312",
+      "packageCount": 1,
+      "customerName": "ACME PARTS CO",
+      "addressRaw": "1136 69TH AVE N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 19,
+      "stopType": "delivery",
+      "shelfId": "6325",
+      "packageCount": 1,
+      "customerName": "ROSA ESPARZA",
+      "addressRaw": "12260 WEAVER LAKE RD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 20,
+      "stopType": "delivery",
+      "shelfId": "6325",
+      "packageCount": 1,
+      "customerName": "NOAH IVERSEN",
+      "addressRaw": "4343 HOLLY LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 21,
+      "stopType": "delivery",
+      "shelfId": "6325",
+      "packageCount": 1,
+      "customerName": "OLGA OYELARAN",
+      "addressRaw": "1100 CENTRAL PARK BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 22,
+      "stopType": "delivery",
+      "shelfId": "6358",
+      "packageCount": 5,
+      "customerName": "JAMAL KESTREL",
+      "addressRaw": "7391 70TH PL N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 23,
+      "stopType": "delivery",
+      "shelfId": "6391",
+      "packageCount": 1,
+      "customerName": "HUGO LINDQVIST",
+      "addressRaw": "8428 WEAVER LAKE RD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 24,
+      "stopType": "delivery",
+      "shelfId": "6411",
+      "packageCount": 2,
+      "customerName": "GINA FINLEY",
+      "addressRaw": "5606 HOLLY LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 25,
+      "stopType": "delivery",
+      "shelfId": "6431",
+      "packageCount": 5,
+      "customerName": "ANA KESTREL",
+      "addressRaw": "6533 82ND AVE N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 26,
+      "stopType": "delivery",
+      "shelfId": "6464",
+      "packageCount": 1,
+      "customerName": "ANA LINDQVIST",
+      "addressRaw": "11315 70TH PL N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 27,
+      "stopType": "delivery",
+      "shelfId": "6477",
+      "packageCount": 1,
+      "customerName": "GINA MORROW",
+      "addressRaw": "1998 NIAGARA LN N",
+      "addressLine2": "UNIT 3B",
+      "completed": false
+    },
+    {
+      "stopNumber": 28,
+      "stopType": "delivery",
+      "shelfId": "6490",
+      "packageCount": 2,
+      "customerName": "BRIAN KESTREL",
+      "addressRaw": "1704 NIAGARA LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 29,
+      "stopType": "delivery",
+      "shelfId": "6523",
+      "packageCount": 2,
+      "customerName": "PAUL FINLEY",
+      "addressRaw": "4477 WEAVER LAKE RD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 30,
+      "stopType": "delivery",
+      "shelfId": "6530",
+      "packageCount": 2,
+      "customerName": "JAMAL IVERSEN",
+      "addressRaw": "4307 ORCHID LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 31,
+      "stopType": "delivery",
+      "shelfId": "6537",
+      "packageCount": 2,
+      "customerName": "SAM CORVIN",
+      "addressRaw": "12347 EAGLE LAKE BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 32,
+      "stopType": "delivery",
+      "shelfId": "6544",
+      "packageCount": 1,
+      "customerName": "MAYA LINDQVIST",
+      "addressRaw": "8057 HOLLY LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 33,
+      "stopType": "pickup",
+      "shelfId": "6577",
+      "packageCount": 2,
+      "customerName": "NORTHWIND SUPPLY LLC",
+      "addressRaw": "9752 EAGLE LAKE BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 34,
+      "stopType": "delivery",
+      "shelfId": "6597",
+      "packageCount": 1,
+      "customerName": "MAYA GARROWAY",
+      "addressRaw": "3875 KIRKWOOD LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 35,
+      "stopType": "delivery",
+      "shelfId": "6604",
+      "packageCount": 5,
+      "customerName": "ELENA CORVIN",
+      "addressRaw": "12859 ELM CREEK BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 36,
+      "stopType": "delivery",
+      "shelfId": "6617",
+      "packageCount": 2,
+      "customerName": "KIRA FINLEY",
+      "addressRaw": "9671 ELM CREEK BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 37,
+      "stopType": "delivery",
+      "shelfId": "6630",
+      "packageCount": 1,
+      "customerName": "JAMAL DELACRUZ",
+      "addressRaw": "8576 ORCHID LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 38,
+      "stopType": "delivery",
+      "shelfId": "6663",
+      "packageCount": 5,
+      "customerName": "KIRA FINLEY",
+      "addressRaw": "3078 CENTRAL PARK BLVD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 39,
+      "stopType": "delivery",
+      "shelfId": "6696",
+      "packageCount": 2,
+      "customerName": "BRIAN IVERSEN",
+      "addressRaw": "11645 ORCHID LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 40,
+      "stopType": "delivery",
+      "shelfId": "6703",
+      "packageCount": 2,
+      "customerName": "JAMAL DELACRUZ",
+      "addressRaw": "10838 HOLLY LN N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 41,
+      "stopType": "delivery",
+      "shelfId": "6736",
+      "packageCount": 2,
+      "customerName": "PAUL FINLEY",
+      "addressRaw": "7575 WEAVER LAKE RD N",
+      "addressLine2": null,
+      "completed": false
+    },
+    {
+      "stopNumber": 42,
+      "stopType": "delivery",
+      "shelfId": "6756",
+      "packageCount": 2,
+      "customerName": "ROSA DELACRUZ",
+      "addressRaw": "9169 CENTRAL PARK BLVD N",
+      "addressLine2": null,
+      "completed": false
+    }
+  ]
+}

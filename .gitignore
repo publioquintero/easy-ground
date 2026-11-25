@@ -1,0 +1,27 @@
+# Real GroundCloud samples contain customer names/addresses (PII)
+docs/samples/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OCR language data cache (tesseract.js)
+*.traineddata

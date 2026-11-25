@@ -1,0 +1,85 @@
+# Infrastructure only — Postgres, Redis, storage (for local dev with `npm run dev` + uvicorn):
+#   docker compose up -d
+# Full app in containers (web on http://localhost:8080):
+#   docker compose --profile app up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: easyground
+      POSTGRES_PASSWORD: easyground
+      POSTGRES_DB: easyground
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U easyground"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  # S3-compatible object storage (photos of gates/mailboxes, imported PDFs). MinIO no longer
+  # publishes Docker images (PLAN D7), so this is RustFS; the backend only speaks S3 (boto3).
+  storage:
+    image: rustfs/rustfs:1.0.4
+    environment:
+      RUSTFS_ACCESS_KEY: easyground
+      RUSTFS_SECRET_KEY: easyground-dev-secret
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # web console
+    volumes:
+      - storagedata:/data
+
+  api:
+    profiles: ["app"]
+    build: ./backend
+    # Secrets (GOOGLE_MAPS_API_KEY) come from backend/.env at runtime, never baked into the image.
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      # Inside the compose network the services are reached by name, not localhost.
+      DATABASE_URL: postgresql://easyground:easyground@postgres:5432/easyground
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT_URL: http://storage:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      storage:
+        condition: service_started
+    restart: unless-stopped
+
+  web:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  storagedata:

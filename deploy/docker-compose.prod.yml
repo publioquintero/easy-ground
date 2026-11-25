@@ -1,0 +1,63 @@
+# Production overrides for a public server. Use together with the base file:
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml --env-file deploy/.env --profile app up -d --build
+#
+# Differences from local:
+# - Postgres, Redis and storage publish no ports: they are only reachable inside the
+#   compose network. (Docker bypasses ufw, so a published port would be public.)
+# - Real passwords come from deploy/.env (see deploy/.env.example), never the dev defaults.
+# - Caddy in front: HTTPS with an automatic Let's Encrypt certificate (Safari needs HTTPS
+#   for GPS, the camera and installing the PWA) and a username/password, so strangers can't
+#   use the API and spend the Google key.
+
+services:
+  postgres:
+    ports: !reset []
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+    restart: unless-stopped
+
+  redis:
+    ports: !reset []
+    restart: unless-stopped
+
+  storage:
+    ports: !reset []
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?set S3_ACCESS_KEY in deploy/.env}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in deploy/.env}
+      RUSTFS_CONSOLE_ENABLE: "false"
+    restart: unless-stopped
+
+  api:
+    environment:
+      DATABASE_URL: postgresql://easyground:${POSTGRES_PASSWORD}@postgres:5432/easyground
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+
+  web:
+    ports: !reset []
+
+  caddy:
+    profiles: ["app"]
+    image: caddy:2.8.4-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in deploy/.env}
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:?set BASIC_AUTH_USER in deploy/.env}
+      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:?set BASIC_AUTH_HASH in deploy/.env}
+    volumes:
+      # Paths are relative to the project root (the first compose file).
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
