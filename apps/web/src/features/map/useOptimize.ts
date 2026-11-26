@@ -1,6 +1,10 @@
 import {
+  distanceMeters,
+  insertTimedStops,
   isPriorityStop,
   optimizeWithPriority,
+  timeLimits,
+  type TimeRules,
   pathDistance,
   sideExempt,
   sideOfArrival,
@@ -66,6 +70,15 @@ export function optimizationPoints(model: MapModel, from?: LatLng | null): { lat
   return points.length >= 2 ? points : null;
 }
 
+/** What pickup windows and business hours need to plan with: the rules, the time now and the time per stop. */
+export interface Timing {
+  rules: TimeRules;
+  now: Date;
+  stopMinutes: number;
+  /** Average speed of the route by road (m/s), when Google's route is known. */
+  speedMps?: number;
+}
+
 /**
  * Optimize the stops still to do. From the driver's GPS position when known (all pending
  * stops are reordered); otherwise from the current stop. With `priorityFirst`, businesses
@@ -74,6 +87,9 @@ export function optimizationPoints(model: MapModel, from?: LatLng | null): { lat
  *
  * `distance` is the road distance from the server when available; without it the
  * optimizer uses straight lines.
+ *
+ * With `timing`, pickups are left out of that optimization and then placed where they fit
+ * their time window (usually in the afternoon), waiting for the window when needed.
  */
 export function computeOptimizedOrder(
   model: MapModel,
@@ -81,28 +97,49 @@ export function computeOptimizedOrder(
   priorityFirst = false,
   distance?: Distance,
   rightSide: RightSideMode = 'off',
+  timing?: Timing,
 ): OptimizedOrder | null {
   const current = model.current;
   if (!current) return null;
   const startAtCurrent = !from;
   const start: LatLng = from ?? toPoint(current);
   const stops = startAtCurrent ? model.sequence.filter((m) => m.stopNumber !== current.stopNumber) : model.sequence;
-  const priority = new Set(priorityFirst ? stops.filter((m) => isPriorityStop(m.stop)).map((m) => m.stopNumber) : []);
+  const timed = timing ? stops.filter((m) => m.stop.stopType === 'pickup') : [];
+  const rest = stops.filter((m) => !timed.includes(m));
+  const priority = new Set(priorityFirst ? rest.filter((m) => isPriorityStop(m.stop)).map((m) => m.stopNumber) : []);
 
   const houses = rightSide === 'off' ? null : sideHouses(stops);
   const side = houses && houses.size > 0 ? { mode: rightSide, house: houses } : undefined;
-  const result = optimizeWithPriority(stops.map(toPoint), priority, { start, distance, side });
+  const result =
+    rest.length > 0
+      ? optimizeWithPriority(rest.map(toPoint), priority, { start, distance, side })
+      : { order: [] as number[], distance: 0, priorityCount: 0, leftArrivals: undefined, sideExtra: undefined };
+  const marker = new Map(stops.map((m) => [m.stopNumber, m]));
+  let order = result.order;
+  if (timing && timed.length > 0) {
+    const withLimits = (m: StopMarker) => ({ ...toPoint(m), limits: timeLimits(m.stop, timing.rules, timing.now) });
+    order = insertTimedStops(order.map((n) => withLimits(marker.get(n)!)), timed.map(withLimits), {
+      start,
+      startMs: timing.now.getTime(),
+      stopMinutes: timing.stopMinutes,
+      speedMps: timing.speedMps,
+      // Without road distances, streets are about 1.4× the straight line.
+      distance: distance ?? ((a, b) => distanceMeters(a, b) * 1.4),
+    });
+  }
+  const ordered = order.map((n) => marker.get(n)!);
   const byNumber = [...stops].sort((a, b) => a.stopNumber - b.stopNumber);
   return {
-    order: startAtCurrent ? [current.stopNumber, ...result.order] : result.order,
-    distanceM: result.distance,
+    order: startAtCurrent ? [current.stopNumber, ...order] : order,
+    distanceM: timed.length > 0 ? pathDistance(ordered.map(toPoint), start, distance) : result.distance,
     baselineM: pathDistance(byNumber.map(toPoint), start, distance),
     startedFrom: startAtCurrent ? 'stop' : 'location',
     priorityCount: result.priorityCount,
+    timedCount: timed.length,
     metric: distance ? 'road' : 'straight',
     ...(side && {
       rightSide,
-      leftArrivals: result.leftArrivals ?? 0,
+      leftArrivals: timed.length > 0 ? countLeftArrivals(ordered, start, side.house) : (result.leftArrivals ?? 0),
       sideExtraM: result.sideExtra ?? 0,
       baselineLeftArrivals: countLeftArrivals(byNumber, start, side.house),
     }),

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { StopDraft } from '@easy-ground/core';
+import { useAppSelector } from '../store';
 
 interface Props {
   stop: StopDraft;
@@ -16,7 +17,10 @@ interface Props {
 const asInt = (value: string) => (/^\d+$/.test(value.trim()) ? Number(value.trim()) : NaN);
 
 export function StopEditor({ stop, flags, takenNumbers, isNew, onSave, onCancel, onDelete, onLooksRight }: Props) {
+  const defaultWindow = useAppSelector((s) => s.route.settings.pickupWindow);
   const [form, setForm] = useState({
+    windowFrom: (stop.pickupWindow ?? defaultWindow).from,
+    windowTo: (stop.pickupWindow ?? defaultWindow).to,
     stopNumber: String(stop.stopNumber),
     addressRaw: stop.addressRaw,
     addressLine2: stop.addressLine2 ?? '',
@@ -42,6 +46,7 @@ export function StopEditor({ stop, flags, takenNumbers, isNew, onSave, onCancel,
         : null,
     addressRaw: !/^\d+\S*\s+\S+/.test(address) ? 'House number and street, e.g. 8131 OAKVIEW DR N' : null,
     packageCount: !(packageCount >= 0) ? 'Enter a number' : null,
+    window: form.stopType === 'pickup' && !(form.windowFrom < form.windowTo) ? 'The window must end after it starts' : null,
   };
   const valid = Object.values(errors).every((e) => e === null);
 
@@ -59,6 +64,11 @@ export function StopEditor({ stop, flags, takenNumbers, isNew, onSave, onCancel,
       addressLine2: clean(form.addressLine2),
       completed: form.completed,
       business: form.business,
+      // Only a window different from the default is kept, so changing the default applies to the rest.
+      pickupWindow:
+        form.stopType === 'pickup' && (form.windowFrom !== defaultWindow.from || form.windowTo !== defaultWindow.to)
+          ? { from: form.windowFrom, to: form.windowTo }
+          : null,
     });
   }
 
@@ -120,9 +130,25 @@ export function StopEditor({ stop, flags, takenNumbers, isNew, onSave, onCancel,
       </div>
       {errors.packageCount && <p className="field-error">Pkgs: {errors.packageCount}</p>}
 
+      {form.stopType === 'pickup' && (
+        <>
+          <div className="field-row">
+            <label className="field">
+              <span>Pickup from</span>
+              <input type="time" value={form.windowFrom} onChange={(e) => e.target.value && set('windowFrom', e.target.value)} />
+            </label>
+            <label className="field">
+              <span>Pickup until</span>
+              <input type="time" value={form.windowTo} onChange={(e) => e.target.value && set('windowTo', e.target.value)} />
+            </label>
+          </div>
+          {errors.window && <p className="field-error">{errors.window}</p>}
+        </>
+      )}
+
       <label className="check">
         <input type="checkbox" checked={form.business} onChange={(e) => set('business', e.target.checked)} />
-        Business (delivered first, before homes)
+        Business (delivered first, before it closes)
       </label>
       <label className="check">
         <input type="checkbox" checked={form.completed} onChange={(e) => set('completed', e.target.checked)} />

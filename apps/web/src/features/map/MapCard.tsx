@@ -3,7 +3,8 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useLazyRoadMatrixQuery, useRoadPathQuery } from '../../store/api';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { currentStopSet, orderModeSet, priorityFirstSet, routeOptimized, settingsChanged, stopUpdated } from '../../store/routeSlice';
-import { distanceMeters, isPriorityStop, roadDistance, sideOfArrival, type RightSideMode } from '@easy-ground/core';
+import { distanceMeters, isPriorityStop, pickupWindowOf, roadDistance, sideOfArrival, simulateRoute, timeLimits, timeToday, type RightSideMode, type TimeRules } from '@easy-ground/core';
+import { formatClock, formatHhmm, formatWindow } from '../time';
 import { buildMapModel, drivePoint, navigationLinks } from './mapModel';
 import { DriverSettingsPanel } from './DriverSettingsPanel';
 import { useDrivewayAlerts } from './useDrivewayAlerts';
@@ -74,6 +75,30 @@ export function MapCard() {
     if (next) dispatch(currentStopSet(next.stopNumber));
   };
   const priorityOnMap = model.sequence.filter((m) => isPriorityStop(m.stop)).length;
+  // Business deliveries close at a set time and pickups have a window: estimate when the
+  // route reaches each one, from now, with road drive times plus time spent at each stop.
+  const rules: TimeRules = {
+    businessCloseAt: settings.businessCloseAt ?? '16:00',
+    pickupWindow: settings.pickupWindow ?? { from: '14:00', to: '17:00' },
+  };
+  const nowDate = new Date();
+  const closeAt = timeToday(rules.businessCloseAt, nowDate);
+  const pickupsOnMap = pendingOnMap.filter((m) => m.stop.stopType === 'pickup');
+  const legs = road.currentData?.legs_duration_s;
+  const timeCheck =
+    legs && legs.length === pendingOnMap.length - 1 && (priorityOnMap > 0 || pickupsOnMap.length > 0)
+      ? simulateRoute(pendingOnMap.map((m) => timeLimits(m.stop, rules, nowDate)), [0, ...legs], nowDate.getTime(), settings.stopMinutes ?? 2)
+      : null;
+  const arrivalOf = (n: number) => timeCheck?.arrivals[pendingOnMap.findIndex((m) => m.stopNumber === n)];
+  const lastBusiness = pendingOnMap.filter((m) => isPriorityStop(m.stop)).at(-1);
+  const pickupTimes = pickupsOnMap.map((m) => arrivalOf(m.stopNumber)!).filter((t) => t !== undefined);
+  const lateLabel = (n: number) => {
+    const m = pendingOnMap.find((x) => x.stopNumber === n)!;
+    return m.stop.stopType === 'pickup' ? `#${n} (pickup ${formatWindow(pickupWindowOf(m.stop, rules))})` : `#${n} (business)`;
+  };
+  // Plan pickups with this route's real average speed (traffic, residential streets).
+  const speedMps = road.currentData && road.currentData.duration_s > 0 ? road.currentData.distance_m / road.currentData.duration_s : undefined;
+  const timing = { rules, now: nowDate, stopMinutes: settings.stopMinutes ?? 2, speedMps };
   // Road distances between nearby stops come from the server (cached there and here);
   // without them (no key, offline) the optimizer falls back to straight lines.
   const optimize = async (withPriority = priorityFirst, rightSide: RightSideMode = settings.rightSide) => {
@@ -87,7 +112,7 @@ export function MapCard() {
     } catch {
       distance = undefined;
     }
-    const result = computeOptimizedOrder(model, from, withPriority, distance, rightSide);
+    const result = computeOptimizedOrder(model, from, withPriority, distance, rightSide, { ...timing, now: new Date() });
     if (result) dispatch(routeOptimized(result));
   };
   const optimizing = matrix.isFetching;
@@ -147,7 +172,7 @@ export function MapCard() {
         <div className="order-bar">
           <div className="segmented order-toggle" role="group" aria-label="Stop order">
             <button className={orderMode === 'groundcloud' ? 'on' : ''} onClick={() => dispatch(orderModeSet('groundcloud'))}>
-              GroundCloud #
+              GC #
             </button>
             <button
               className={orderMode === 'optimized' ? 'on' : ''}
@@ -158,21 +183,14 @@ export function MapCard() {
             </button>
           </div>
           {optimized && (
-            <button className="button ghost small-btn" disabled={optimizing} onClick={() => optimize()}>
-              {me ? 'Re-optimize from here' : 'Re-optimize'}
+            <button className="button ghost small-btn" disabled={optimizing} onClick={() => optimize()} title="Re-optimize the stops left">
+              ↻ {me ? 'From here' : 'Again'}
             </button>
           )}
-          <div className="segmented side-toggle" role="group" aria-label="Right side">
-            {(['off', 'prefer', 'strict'] as const).map((mode) => (
-              <button key={mode} className={settings.rightSide === mode ? 'on' : ''} disabled={optimizing} onClick={() => setRightSide(mode)}>
-                {mode === 'off' ? 'Any side' : mode === 'prefer' ? 'Prefer right' : 'Right only'}
-              </button>
-            ))}
-          </div>
           {priorityOnMap > 0 && (
             <label className="check priority-check">
               <input type="checkbox" checked={priorityFirst} onChange={(e) => togglePriority(e.target.checked)} />
-              Businesses &amp; pickups first ({priorityOnMap})
+              Businesses first ({priorityOnMap}) — they close at {formatHhmm(rules.businessCloseAt)}
             </label>
           )}
         </div>
@@ -181,7 +199,14 @@ export function MapCard() {
         <p className="muted small order-note">
           {(optimized.priorityCount ?? 0) > 0 ? (
             <>
-              <strong className="text">{optimized.priorityCount} businesses &amp; pickups first</strong>, then homes:{' '}
+              <strong className="text">{optimized.priorityCount} business{optimized.priorityCount === 1 ? '' : 'es'} first</strong>, then homes
+              {(optimized.timedCount ?? 0) > 0 && <>, pickups in their windows</>}:{' '}
+              ≈ <strong className="text">{miles(optimized.distanceM)} mi</strong> {measure}
+              {optimized.startedFrom === 'location' ? ' from your location.' : ` from stop #${optimized.order[0]}.`}
+            </>
+          ) : (optimized.timedCount ?? 0) > 0 ? (
+            <>
+              <strong className="text">{optimized.timedCount} pickup{optimized.timedCount === 1 ? '' : 's'} placed in their windows</strong>:{' '}
               ≈ <strong className="text">{miles(optimized.distanceM)} mi</strong> {measure}
               {optimized.startedFrom === 'location' ? ' from your location.' : ` from stop #${optimized.order[0]}.`}
             </>
@@ -213,6 +238,31 @@ export function MapCard() {
           <>
             Driving {pendingOnMap.length} stops: <strong className="text">{miles(road.currentData.distance_m)} mi</strong> ·{' '}
             <strong className="text">{formatDuration(road.currentData.duration_s)}</strong> on the road (no stop time).
+            {timeCheck && (
+              timeCheck.late.length > 0 ? (
+                <span className="amber-text">
+                  {' '}{timeCheck.late.length} stop{timeCheck.late.length === 1 ? '' : 's'} outside their time:{' '}
+                  {timeCheck.late.slice(0, 5).map(lateLabel).join(', ')}{timeCheck.late.length > 5 ? '…' : ''}.
+                  {orderMode !== 'optimized' ? ' Try the optimized order.' : !priorityFirst && priorityOnMap > 0 ? ' Turn on "Businesses first".' : ''}
+                </span>
+              ) : (
+                <span>
+                  {lastBusiness && closeAt !== null && (
+                    <>
+                      {' '}Last business ≈ <strong className="text">{formatClock(arrivalOf(lastBusiness.stopNumber)!)}</strong>, before the{' '}
+                      {formatClock(closeAt)} close.
+                    </>
+                  )}
+                  {pickupTimes.length > 0 && (
+                    <>
+                      {' '}Pickups ≈ <strong className="text">{formatClock(Math.min(...pickupTimes))}</strong>
+                      {pickupTimes.length > 1 && <>–<strong className="text">{formatClock(Math.max(...pickupTimes))}</strong></>}, in their windows
+                      {timeCheck.waitS >= 60 ? <> ({formatDuration(timeCheck.waitS)} waiting for them to open).</> : '.'}
+                    </>
+                  )}
+                </span>
+              )
+            )}
           </>
         ) : road.isFetching ? (
           'Getting road directions…'
@@ -237,6 +287,12 @@ export function MapCard() {
               {current.stop.addressLine2 && <span className="addr2"> · {current.stop.addressLine2}</span>}
               {current.stop.customerName && <div className="meta">{current.stop.customerName}</div>}
               {current.stop.customerNotes && <div className="cust-notes">{current.stop.customerNotes}</div>}
+              {current.stop.stopType === 'pickup' && (
+                <div className="meta">
+                  Pickup window <strong className="text">{formatWindow(pickupWindowOf(current.stop, rules))}</strong>
+                  {arrivalOf(current.stopNumber) !== undefined && <> · arrive ≈ {formatClock(arrivalOf(current.stopNumber)!)}</>}
+                </div>
+              )}
               {current.state === 'check' && <span className="tag amber">Check map match</span>}
             </div>
           </div>
@@ -300,7 +356,7 @@ export function MapCard() {
         <p className="good small">All stops on the map are done.</p>
       )}
       {alerts.message && <p className="small amber-text alert-note">{alerts.message}</p>}
-      <DriverSettingsPanel onVoiceEnabled={alerts.unlock} />
+      <DriverSettingsPanel onVoiceEnabled={alerts.unlock} onRightSide={setRightSide} rightSideDisabled={optimizing} />
     </section>
   );
 }

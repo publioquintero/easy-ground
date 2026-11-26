@@ -36,6 +36,14 @@ export interface StopDraft {
   trackingNumbers?: string[];
   /** Customer instructions from GroundCloud's stop card ("CUST REQ: …"). */
   customerNotes?: string | null;
+  /** Pickups only: when the pickup can be made. Absent/null = the driver's default window. */
+  pickupWindow?: TimeWindow | null;
+}
+
+/** A time range on the route's day, local time "HH:MM". */
+export interface TimeWindow {
+  from: string;
+  to: string;
 }
 
 export type StopSource = 'manifest' | 'manual' | 'label' | 'recording';

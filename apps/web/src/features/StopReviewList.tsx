@@ -4,12 +4,14 @@ import { useAppDispatch, useAppSelector } from '../store';
 import {
   issueDismissed,
   nextFreeStopNumber,
+  orderModeSet,
   stopAdded,
   stopRemoved,
   stopReviewed,
   stopUpdated,
 } from '../store/routeSlice';
 import { StopEditor } from './StopEditor';
+import { formatWindow } from './time';
 
 const ISSUE_LABEL: Record<string, string> = {
   truncated_address: 'Truncated address',
@@ -23,7 +25,7 @@ const NEW = 'new' as const;
 
 export function StopReviewList() {
   const dispatch = useAppDispatch();
-  const { drafts, issues, sourceName, geo } = useAppSelector((s) => s.route);
+  const { drafts, issues, sourceName, geo, optimized, orderMode, settings } = useAppSelector((s) => s.route);
   const [editing, setEditing] = useState<number | typeof NEW | null>(null);
 
   const issuesByStop = useMemo(() => {
@@ -51,6 +53,17 @@ export function StopReviewList() {
   const packages = pending.reduce((sum, d) => sum + d.packageCount, 0);
   const flaggedStops = drafts.filter((d) => issuesByStop.has(d.stopNumber));
 
+  // Same order as the map: optimized driving order when chosen, else GroundCloud's "#".
+  // Stops outside the optimized order (completed, added later) follow, by "#".
+  const byOptimized = orderMode === 'optimized' && !!optimized;
+  const position = new Map(byOptimized ? optimized.order.map((n, i) => [n, i + 1]) : []);
+  const listed = byOptimized
+    ? [...drafts].sort(
+        (a, b) =>
+          (position.get(a.stopNumber) ?? Infinity) - (position.get(b.stopNumber) ?? Infinity) || a.stopNumber - b.stopNumber,
+      )
+    : drafts;
+
   const blankStop: StopDraft = {
     stopNumber: nextFreeStopNumber(drafts),
     stopType: 'delivery',
@@ -76,6 +89,13 @@ export function StopReviewList() {
         )}
       </div>
 
+      {optimized && (
+        <div className="segmented list-order" role="group" aria-label="List order">
+          <button className={!byOptimized ? 'on' : ''} onClick={() => dispatch(orderModeSet('groundcloud'))}>GC # order</button>
+          <button className={byOptimized ? 'on' : ''} onClick={() => dispatch(orderModeSet('optimized'))}>Optimized order</button>
+        </div>
+      )}
+
       <div className="stats">
         <div><strong>{pending.length}</strong><span>pending</span></div>
         <div><strong>{packages}</strong><span>packages</span></div>
@@ -98,7 +118,8 @@ export function StopReviewList() {
       ))}
 
       <ol className="stops">
-        {drafts.map((d) => {
+        {listed.map((d) => {
+          const seq = position.get(d.stopNumber);
           const flags = issuesByStop.get(d.stopNumber);
           const isEditing = editing === d.stopNumber;
           return (
@@ -110,8 +131,9 @@ export function StopReviewList() {
                 onClick={() => setEditing(isEditing ? null : d.stopNumber)}
               >
                 <span className="num">
-                  {d.stopNumber}
+                  {seq ?? d.stopNumber}
                   {geo[d.stopNumber]?.status === 'ok' && <span className="located" title="On the map" />}
+                  {seq !== undefined && <span className="gc-num">#{d.stopNumber}</span>}
                 </span>
                 <div className="body">
                   <div className="addr">
@@ -124,7 +146,9 @@ export function StopReviewList() {
                       <span className="match">→ {geo[d.stopNumber].formatted}</span>
                     )}
                     {d.business && <span className="tag business">Business</span>}
-                    {d.stopType === 'pickup' && <span className="tag pickup">Pickup</span>}
+                    {d.stopType === 'pickup' && (
+                      <span className="tag pickup">Pickup {formatWindow(d.pickupWindow ?? settings.pickupWindow)}</span>
+                    )}
                     {d.source === 'label' && <span className="tag pickup">From label</span>}
                     {d.completed && <span className="tag">Completed</span>}
                     {flags?.map((f) => <span key={f} className="tag amber">{f}</span>)}

@@ -11,12 +11,20 @@ export function LocateCard() {
   const { drafts, area, geo } = useAppSelector((s) => s.route);
   const [geocode, { isLoading, error }] = useGeocodeMutation();
   const [changingArea, setChangingArea] = useState(false);
-  const editingArea = !area || changingArea;
   const [form, setForm] = useState({ zip: area?.zip ?? '', city: area?.city ?? '', state: area?.state ?? '' });
 
   if (drafts.length === 0) return null;
 
   const pending = drafts.filter((d) => !d.completed && d.addressRaw);
+  // The printed manifest (and package labels) give each stop its own ZIP: then no route
+  // area is needed, and the most common ZIP stands in for it in the request.
+  const zips = [...new Set(pending.map((d) => d.zip).filter((z): z is string => !!z && /^\d{5}$/.test(z)))];
+  const ownZips = pending.length > 0 && pending.every((d) => d.zip && /^\d{5}$/.test(d.zip));
+  const commonZip = zips
+    .map((z) => [z, pending.filter((d) => d.zip === z).length] as const)
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  const effectiveArea: RouteArea | null = area ?? (ownZips && commonZip ? { zip: commonZip } : null);
+  const editingArea = !effectiveArea || changingArea;
   const toLocate = pending.filter((d) => !geo[d.stopNumber] || geo[d.stopNumber].status === 'error');
   const counts = pending.reduce(
     (acc, d) => {
@@ -41,9 +49,9 @@ export function LocateCard() {
   }
 
   async function locate() {
-    if (!area || toLocate.length === 0) return;
+    if (!effectiveArea || toLocate.length === 0) return;
     const response = await geocode({
-      area,
+      area: effectiveArea,
       addresses: toLocate.map((d) => ({ id: String(d.stopNumber), address: d.addressRaw, ...(d.zip ? { zip: d.zip } : {}) })),
     });
     if ('data' in response && response.data) dispatch(stopsLocated(response.data.results));
@@ -55,7 +63,11 @@ export function LocateCard() {
 
       {editingArea ? (
         <form onSubmit={saveArea}>
-          <p className="muted small">The manifest has no city or ZIP. Set your route area once.</p>
+          <p className="muted small">
+            {zips.length > 0
+              ? 'Some stops have no ZIP. Set your route area once for them.'
+              : 'The manifest has no city or ZIP. Set your route area once.'}
+          </p>
           <div className="field-row" style={{ marginTop: 10 }}>
             <label className="field narrow wide-narrow">
               <span>ZIP</span>
@@ -82,8 +94,14 @@ export function LocateCard() {
       ) : (
         <>
           <p className="muted small">
-            Area: <strong className="text">{area && describeArea(area)}</strong>{' '}
-            <button className="link" onClick={() => { setForm({ zip: area?.zip ?? '', city: area?.city ?? '', state: area?.state ?? '' }); setChangingArea(true); }}>change</button>
+            {ownZips ? (
+              <>ZIP from the manifest: <strong className="text">{zips.join(', ')}</strong>{' '}</>
+            ) : (
+              <>Area: <strong className="text">{effectiveArea && describeArea(effectiveArea)}</strong>{' '}</>
+            )}
+            {!ownZips && (
+              <button className="link" onClick={() => { setForm({ zip: area?.zip ?? '', city: area?.city ?? '', state: area?.state ?? '' }); setChangingArea(true); }}>change</button>
+            )}
           </p>
 
           {(counts.ok + counts.review + counts.not_found > 0) && (

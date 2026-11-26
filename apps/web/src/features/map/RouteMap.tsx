@@ -23,7 +23,7 @@ const NEAR_ROUTE_M = 40_000;
 
 const iconCache = new Map<string, L.DivIcon>();
 function pinIcon(marker: StopMarker): L.DivIcon {
-  const priority = isPriorityStop(marker.stop);
+  const priority = isPriorityStop(marker.stop) || marker.stop.stopType === 'pickup';
   const key = `${marker.stopNumber}:${marker.state}:${priority}`;
   let icon = iconCache.get(key);
   if (!icon) {

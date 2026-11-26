@@ -11,3 +11,5 @@ export * from './capture/labelParser';
 export * from './routing/roadDistance';
 export * from './routing/side';
 export * from './capture/stopCardParser';
+export * from './capture/printedManifestParser';
+export * from './routing/schedule';

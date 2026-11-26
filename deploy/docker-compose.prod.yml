@@ -46,8 +46,6 @@ services:
       - "443:443/udp"
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in deploy/.env}
-      BASIC_AUTH_USER: ${BASIC_AUTH_USER:?set BASIC_AUTH_USER in deploy/.env}
-      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:?set BASIC_AUTH_HASH in deploy/.env}
     volumes:
       # Paths are relative to the project root (the first compose file).
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro

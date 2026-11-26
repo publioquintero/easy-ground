@@ -7,6 +7,7 @@ import {
   type ParseResult,
   type RightSideMode,
   type StopDraft,
+  type TimeWindow,
 } from '@easy-ground/core';
 import type { GeoResult, RouteArea } from './api';
 
@@ -22,7 +23,7 @@ export interface RouteState {
   /** Which order the map follows: GroundCloud's "#" or our optimized sequence. */
   orderMode: 'groundcloud' | 'optimized';
   optimized: OptimizedOrder | null;
-  /** Businesses and pickups first when optimizing (they close / have pickup windows). */
+  /** Business deliveries first when optimizing (they close). Pickups always follow their windows. */
   priorityFirst: boolean;
   /** Driver preferences; kept when the route is cleared. */
   settings: DriverSettings;
@@ -35,12 +36,21 @@ export interface DriverSettings {
   drivewayThresholdM: number;
   /** Spoken alerts when approaching a private driveway. */
   voiceAlerts: boolean;
+  /** Businesses (and their pickups) must be reached before this local time, "HH:MM". */
+  businessCloseAt: string;
+  /** Average minutes spent at each stop, for arrival estimates. */
+  stopMinutes: number;
+  /** When pickups can be made, unless a pickup has its own window. */
+  pickupWindow: TimeWindow;
 }
 
 export const defaultSettings: DriverSettings = {
   rightSide: 'prefer',
   drivewayThresholdM: DEFAULT_DRIVEWAY_THRESHOLD_M,
   voiceAlerts: true,
+  businessCloseAt: '16:00',
+  stopMinutes: 2,
+  pickupWindow: { from: '14:00', to: '17:00' },
 };
 
 export interface OptimizedOrder {
@@ -51,8 +61,10 @@ export interface OptimizedOrder {
   baselineM: number;
   /** Where the optimization started: the driver's GPS position or the current stop. */
   startedFrom?: 'location' | 'stop';
-  /** How many businesses/pickups were put first (0 = plain shortest order). */
+  /** How many businesses were put first (0 = plain shortest order). */
   priorityCount?: number;
+  /** How many pickups were placed inside their time windows. */
+  timedCount?: number;
   /** How distances were measured: by road (Google) or straight-line (no key / offline). */
   metric?: 'road' | 'straight';
   /** Right-side mode used, stops reached with the house on the left, and meters it added. */
@@ -169,8 +181,9 @@ const routeSlice = createSlice({
       // Plain optimization: only switch when it actually helps (GroundCloud's order is road-aware).
       // Priority-first is a different goal (businesses/pickups early), so it always applies.
       // So is a right-side order that puts fewer houses on the left than GroundCloud's.
-      const { priorityCount, distanceM, baselineM, leftArrivals, baselineLeftArrivals } = action.payload;
-      const prioritized = (priorityCount ?? 0) > 0;
+      const { priorityCount, timedCount, distanceM, baselineM, leftArrivals, baselineLeftArrivals } = action.payload;
+      // Pickup windows are a time goal too: GroundCloud's order doesn't know them.
+      const prioritized = (priorityCount ?? 0) > 0 || (timedCount ?? 0) > 0;
       const fewerLeft = leftArrivals !== undefined && baselineLeftArrivals !== undefined && leftArrivals < baselineLeftArrivals;
       state.orderMode = prioritized || fewerLeft || distanceM < baselineM ? 'optimized' : 'groundcloud';
       // Starting from the driver's position, the first stop of the new order is where to go now.

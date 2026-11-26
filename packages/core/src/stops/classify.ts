@@ -51,7 +51,10 @@ export function looksLikeBusiness(stop: Pick<StopDraft, 'customerName' | 'addres
   return !name.includes(' ') && name.length > 2; // one word: people have first and last names
 }
 
-/** Stops that should be done first: businesses and pickups. */
+/**
+ * Stops that should be done first: business deliveries (businesses close in the afternoon).
+ * Pickups are not: they have their own time window and are scheduled inside it.
+ */
 export function isPriorityStop(stop: Pick<StopDraft, 'stopType' | 'business'>): boolean {
-  return stop.stopType === 'pickup' || stop.business === true;
+  return stop.stopType !== 'pickup' && stop.business === true;
 }
